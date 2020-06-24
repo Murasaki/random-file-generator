@@ -1,6 +1,6 @@
 {
   "name": "murasaki-random-file-generator",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "A simple file generator that uses brute force to create files of a certain size.",
   "scripts": {
     "build": "tsc",
