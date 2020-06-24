@@ -6,7 +6,7 @@
     "clean-dist": "node_modules/.bin/rimraf ./dist",
     "build": "npm run clean-dist && tsc && npm run copypackage",
     "copypackage": "cpx package.json dist/src",
-    "dist": "cd dist/src && npm publish"
+    "dist": "npm run build && cd dist/src && npm publish"
   },
   "keywords": [
     "typescript",
