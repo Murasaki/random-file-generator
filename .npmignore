@@ -1,0 +1,11 @@
+example-usage
+.eslintignore
+.eslintrc.js
+.funcignore
+.gitignore
+.nycrc.json
+local.settings.json
+package-lock.json
+tsconfig.json
+src
+testfiles
