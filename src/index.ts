@@ -34,6 +34,12 @@ export const defaultCallbacks:  { [fileType in SupportedFileType]: SharpFileType
     TIFF: img => img.tiff()
 }
 
+export class GenerateArgumentException extends Error {
+    constructor(argumentName: string, value: any) {
+        super(`Argument '${argumentName}' is not a valid value. Value: '${value}'`);
+    }
+}
+
 /** Generates a Buffer with sharp
  * @param height height in pixels that the image should be
  * @param width width in pixels that the image should be 
@@ -41,6 +47,14 @@ export const defaultCallbacks:  { [fileType in SupportedFileType]: SharpFileType
  * @returns A buffer containing the file.
  */
 export const generateRandomImageBuffer = async (height: number, width: number, sharpFileTypeCallback?: SharpFileTypeCallback): Promise<Buffer> => {
+    if (!height || height <= 0) {
+        throw new GenerateArgumentException("height", height)
+    }
+
+    if (!width || width <= 0) {
+        throw new GenerateArgumentException("width", width)
+    }
+
     const frameData = Buffer.alloc(width * height * 4);
     let i = 0;
 
@@ -62,13 +76,24 @@ export const generateRandomImageBuffer = async (height: number, width: number, s
     })).toBuffer();
 };
 
+/** Specifies how close in bytes the file  */
+export const maxDegreeOfInaccuracyInBytes = BytesInMB / 4
+
 /** Creates a random file Buffer from the specified options
  * @param options Options that dictate how a file is created
  * @returns A buffer containing the file.
  */
 export const generateRandomFile = async (options: GenerateOptions): Promise<Buffer> => {
     if (!options) {
-        throw "Argument cannot be null or undefined: options";
+        throw new GenerateArgumentException("options", options);
+    }
+    
+    if (!options.fileType) {
+        throw new GenerateArgumentException("options.fileType", options.fileType);
+    }
+
+    if (!options.targetLengthMB) {
+        throw new GenerateArgumentException("options.targetLengthMB", options.targetLengthMB);
     }
 
     if (!options.sharpFileTypeCallback) {
@@ -99,7 +124,7 @@ export const generateRandomFile = async (options: GenerateOptions): Promise<Buff
                 `Actual ${(buf.length / BytesInMB).toFixed(2)}MB - ${currentHeight}x${currentWidth} needs ${((targetLength - buf.length) / BytesInMB).toFixed(2)}MB, ` +
                 `changing h/w +${pixelIncrement} to ${lastWidth}x${lastHeight}...`);
         }
-        else if (buf.length >= (targetLength + (BytesInMB / 4))) {
+        else if (buf.length >= (targetLength + maxDegreeOfInaccuracyInBytes)) {
             if (pixelIncrement > 10) {
                 pixelIncrement = Math.ceil(pixelIncrement / 2);
             } else {
