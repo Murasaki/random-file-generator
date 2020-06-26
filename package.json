@@ -1,6 +1,6 @@
 {
   "name": "murasaki-random-file-generator",
-  "version": "1.26.0",
+  "version": "1.27.0",
   "description": "A simple file generator that uses brute force to create files of a certain size.",
   "scripts": {
     "clean-dist": "node_modules/.bin/rimraf ./dist",
