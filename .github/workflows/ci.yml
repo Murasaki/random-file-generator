@@ -2,9 +2,8 @@ name: CI Build For Random  File Generator
 
 on:
   push:
-    branches: [ master ]
-    tags: 
-      - '!v1.*'
+    tags-ignore: 
+      - 'v1.*'
 
 jobs:
   build:
