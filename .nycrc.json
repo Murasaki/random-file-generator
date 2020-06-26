@@ -6,7 +6,8 @@
     "**/*.tests.ts",
     "**/common/test",
     ".eslintrc.js",
-    "dist"
+    "dist",
+    "src/testscripts"
   ],
   "branches": 95,
   "lines": 100,
