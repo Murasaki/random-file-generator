@@ -3,7 +3,7 @@ name: CI Build For Random  File Generator
 on:
   push:
     tags: 
-      - !'**'
+      - '!**'
 
 jobs:
   build:
