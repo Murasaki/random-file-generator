@@ -30,6 +30,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.github_token }}
       - name: Version
         run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           npm version minor
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
