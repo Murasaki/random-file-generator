@@ -99,7 +99,7 @@ export const generateRandomFile = async (options: GenerateOptions): Promise<Buff
     if (!options.sharpFileTypeCallback) {
         options.sharpFileTypeCallback = defaultCallbacks[options.fileType.toUpperCase()]
     }
-
+ 
     const targetLength = BytesInMB * options.targetLengthMB;
     const pixelSize = 4;
     const pixels = targetLength / pixelSize;
