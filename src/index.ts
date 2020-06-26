@@ -9,8 +9,11 @@ export type SharpFileTypeCallback = (img: sharp.Sharp) => sharp.Sharp;
 /** File types generated with sharp */
 export type SharpFileTypes = "PNG" | "JPEG" | "TIFF";
 
+/** File types generated with Officegen lib */
+export type OfficeGenFileTypes = "PPTX" | "XLSX" | "DOCX";
+
 /** The list of supported file types that can be generated, 'None' will generate a raw block of data. */
-export type SupportedFileType = SharpFileTypes | "None";
+export type SupportedFileType = SharpFileTypes | OfficeGenFileTypes | "None";
 
 /** Options that dictate the output randomized file */
 export type GenerateOptions = {
@@ -88,10 +91,6 @@ export const generateRandomFile = async (options: GenerateOptions): Promise<Buff
 
     if (!options.targetLengthMB) {
         throw new GenerateArgumentException("options.targetLengthMB", options.targetLengthMB);
-    }
-
-    if (!options.maxDegreeOfInaccuracyInBytes) {
-        options.maxDegreeOfInaccuracyInBytes = BytesInMB / 4;
     }
 
     const fileTypeHandler = getFileTypeHandler(options.fileType);

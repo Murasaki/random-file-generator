@@ -9,7 +9,8 @@
     "test": "mocha -r ts-node/register 'src/**/*.tests.ts'",
     "test:watch": "mocha -r ts-node/register ./**/*.tests.ts --watch --watch-files ./**/*.tests.ts",
     "test:coverage": "npm run build && nyc npm run test",
-    "dist": "npm run build && cd dist/src && npm publish --access public"
+    "dist": "npm run build && cd dist/src && npm publish --access public",
+    "testscripts:cli": "tsc && node dist/src/testscripts/cli.js"
   },
   "keywords": [
     "typescript",
@@ -21,8 +22,10 @@
     "test data"
   ],
   "dependencies": {
+    "memory-streams": "^0.1.3",
     "officegen": "^0.6.4",
-    "sharp": "^0.25.4"
+    "sharp": "^0.25.4",
+    "xlsx": "^0.16.2"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",

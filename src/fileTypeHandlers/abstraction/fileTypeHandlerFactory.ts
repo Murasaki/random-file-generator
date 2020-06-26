@@ -4,15 +4,18 @@ import { FileTypeHandlerBase } from "./fileTypeHandlerBase";
 import { PngFileTypeHandler } from "../pngFileTypeHandler";
 import { TiffFileTypeHandler } from "../tiffFileTypeHandler";
 import { RawFileTypeHandler } from "../rawFileTypeHandler";
+import { XLSXFileTypeHandler } from "../xlsxFileTypeHandler";
+import { DOCXFileTypeHandler } from "../docxFileTypeHandler";
+import { PPTXFileTypeHandler } from "../pptxFileTypeHandler";
 
 export const getFileTypeHandler = (fileType: SupportedFileType): FileTypeHandlerBase => {
-    if (fileType === "JPEG") {
-        return new JpegFileTypeHandler();
-    } else if (fileType === "PNG") {
-        return new PngFileTypeHandler();
-    } else if (fileType === "TIFF") {
-        return new TiffFileTypeHandler();
+    switch (fileType) {
+        case "JPEG": return new JpegFileTypeHandler;
+        case "PNG": return new PngFileTypeHandler;
+        case "TIFF": return new TiffFileTypeHandler;
+        case "XLSX": return new XLSXFileTypeHandler;
+        case "PPTX": return new PPTXFileTypeHandler;
+        case "DOCX": return new DOCXFileTypeHandler;
+        default: return new RawFileTypeHandler();
     }
-
-    return new RawFileTypeHandler();
 } 

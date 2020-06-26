@@ -5,7 +5,7 @@ import { BytesInMB } from "../../constants";
 
 /** A lookup for each of the supported file types that are images, 
  * the value looked up is a callback after instantiating a raw image buffer with sharp to specify file type */
-export const defaultCallbacks:  { [fileType in SharpFileTypes]: SharpFileTypeCallback; } = {
+export const defaultCallbacks: { [fileType in SharpFileTypes]: SharpFileTypeCallback; } = {
     /** The default callback for png, calls sharp.png() with no options */
     PNG: img => img.png(),
 
@@ -21,27 +21,31 @@ export class SharpFileTypeHandlerBase extends FileTypeHandlerBase {
         if (!options.sharpFileTypeCallback) {
             options.sharpFileTypeCallback = defaultCallbacks[options.fileType.toUpperCase()]
         }
-     
+
+        if (!options.maxDegreeOfInaccuracyInBytes) {
+            options.maxDegreeOfInaccuracyInBytes = BytesInMB / 4;
+        }
+
         const targetLength = BytesInMB * options.targetLengthMB;
         const pixelSize = 4;
         const pixels = targetLength / pixelSize;
         const squareRoot = Math.ceil(Math.sqrt(pixels));
-    
+
         let lastWidth = squareRoot;
         let lastHeight = squareRoot;
         let pixelIncrement = 100;
-    
+
         // eslint-disable-next-line no-constant-condition
         while (true) {
             const currentHeight = lastHeight;
             const currentWidth = lastWidth;
-    
+
             const buf = await generateRandomImageBuffer(currentHeight, currentWidth, options.sharpFileTypeCallback);
-    
+
             if (buf.length <= (targetLength - (BytesInMB / 4))) {
                 lastHeight += pixelIncrement;
                 lastWidth += pixelIncrement;
-    
+
                 console.log(`${new Date().toTimeString()} ${options.fileType}: Target ${options.targetLengthMB}MB ` +
                     `Actual ${(buf.length / BytesInMB).toFixed(2)}MB - ${currentHeight}x${currentWidth} needs ${((targetLength - buf.length) / BytesInMB).toFixed(2)}MB, ` +
                     `changing h/w +${pixelIncrement} to ${lastWidth}x${lastHeight}...`);
@@ -53,10 +57,10 @@ export class SharpFileTypeHandlerBase extends FileTypeHandlerBase {
                 } else {
                     pixelIncrement = 10;
                 }
-    
+
                 lastHeight -= pixelIncrement;
                 lastWidth -= pixelIncrement;
-    
+
                 console.log(`${new Date().toTimeString()} ${options.fileType}: Target ${options.targetLengthMB}MB ` +
                     `Actual ${(buf.length / BytesInMB).toFixed(2)}MB - ${currentHeight}x${currentWidth} needs ${((targetLength - buf.length) / BytesInMB).toFixed(2)}MB, ` +
                     `changing h/w -${pixelIncrement} to ${lastWidth}x${lastHeight}...`);
