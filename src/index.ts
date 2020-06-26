@@ -15,6 +15,17 @@ export type OfficeGenFileTypes = "PPTX" | "XLSX" | "DOCX";
 /** The list of supported file types that can be generated, 'None' will generate a raw block of data. */
 export type SupportedFileType = SharpFileTypes | OfficeGenFileTypes | "None";
 
+export const SupportedFileTypes: SupportedFileType[] = [
+    "PNG",
+    "JPEG", 
+    "TIFF",
+    "PPTX",
+    "XLSX",
+    "DOCX",
+
+    "None"
+];
+
 /** Options that dictate the output randomized file */
 export type GenerateOptions = {
     /** A string that must be in the list of supported file types of the generator */
