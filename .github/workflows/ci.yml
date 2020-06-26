@@ -4,6 +4,8 @@ on:
   push:
     tags-ignore: 
       - 'v1.*'
+    branches: 
+      - master
 
 jobs:
   build:
