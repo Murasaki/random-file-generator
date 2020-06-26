@@ -19,9 +19,9 @@ export const SupportedFileTypes: SupportedFileType[] = [
     "PNG",
     "JPEG", 
     "TIFF",
-    "PPTX",
+    //"PPTX",
     "XLSX",
-    "DOCX",
+    //"DOCX",
 
     "None"
 ];
