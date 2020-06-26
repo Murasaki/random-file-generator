@@ -41,12 +41,12 @@ jobs:
           npm version minor
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
-      - name: Publish
-        run: |
-          npm run dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.github_token }}
-          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
+      #- name: Publish
+      #  run: |
+      #    npm run dist
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.github_token }}
+      #    NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
