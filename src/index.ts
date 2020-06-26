@@ -1,13 +1,16 @@
 import sharp = require("sharp");
-
-const BytesInKiloBytes = 1024;
-const BytesInMB = BytesInKiloBytes * 1024;
+import { GenerateArgumentException } from "./exceptions";
+import { BytesInMB } from "./constants";
+import { getFileTypeHandler } from "./fileTypeHandlers/abstraction/fileTypeHandlerFactory";
 
 /** A callback that determines the output file for images generated with sharp */
 export type SharpFileTypeCallback = (img: sharp.Sharp) => sharp.Sharp;
 
-/** The list of supported file types that can be generated */
-export type SupportedFileType = "PNG" | "JPEG" | "TIFF";
+/** File types generated with sharp */
+export type SharpFileTypes = "PNG" | "JPEG" | "TIFF";
+
+/** The list of supported file types that can be generated, 'None' will generate a raw block of data. */
+export type SupportedFileType = SharpFileTypes | "None";
 
 /** Options that dictate the output randomized file */
 export type GenerateOptions = {
@@ -19,25 +22,24 @@ export type GenerateOptions = {
 
     /** If generating an image, specify a callback on the sharp image that will determine the file type. e.g 'img => img.png({ ...options })' */
     sharpFileTypeCallback?: SharpFileTypeCallback;
+
+    /** Specifies how close to the target in bytes the generated file needs to be */
+    maxDegreeOfInaccuracyInBytes?: number;
 };
 
-/** A lookup for each of the supported file types that are images, 
- * the value looked up is a callback after instantiating a raw image buffer with sharp to specify file type */
-export const defaultCallbacks:  { [fileType in SupportedFileType]: SharpFileTypeCallback; } = {
-    /** The default callback for png, calls sharp.png() with no options */
-    PNG: img => img.png(),
-
-    /** The default callback for jpeg, calls sharp.jpeg() with no options */
-    JPEG: img => img.jpeg(),
-
-    /** The default callback for tiff, calls sharp.tiff() with no options */
-    TIFF: img => img.tiff()
-}
-
-export class GenerateArgumentException extends Error {
-    constructor(argumentName: string, value: any) {
-        super(`Argument '${argumentName}' is not a valid value. Value: '${value}'`);
+export const generateRandomBuffer = async(sizeInBytes: number): Promise<Buffer> => {
+    if (!sizeInBytes || sizeInBytes <= 0) {
+        throw new GenerateArgumentException("sizeInBytes", sizeInBytes)
     }
+
+    const frameData = Buffer.alloc(sizeInBytes);
+
+    let i = 0;
+    while (i < frameData.length) {
+        frameData[i++] = Math.floor(Math.random() * 256);
+    }
+
+    return frameData;
 }
 
 /** Generates a Buffer with sharp
@@ -55,12 +57,7 @@ export const generateRandomImageBuffer = async (height: number, width: number, s
         throw new GenerateArgumentException("width", width)
     }
 
-    const frameData = Buffer.alloc(width * height * 4);
-    let i = 0;
-
-    while (i < frameData.length) {
-        frameData[i++] = Math.floor(Math.random() * 256);
-    }
+    const frameData = await generateRandomBuffer(width * height * 4);
 
     if (!sharpFileTypeCallback) {
         sharpFileTypeCallback = img => img;
@@ -75,9 +72,6 @@ export const generateRandomImageBuffer = async (height: number, width: number, s
         limitInputPixels: false
     })).toBuffer();
 };
-
-/** Specifies how close in bytes the file  */
-export const maxDegreeOfInaccuracyInBytes = BytesInMB / 4
 
 /** Creates a random file Buffer from the specified options
  * @param options Options that dictate how a file is created
@@ -96,49 +90,10 @@ export const generateRandomFile = async (options: GenerateOptions): Promise<Buff
         throw new GenerateArgumentException("options.targetLengthMB", options.targetLengthMB);
     }
 
-    if (!options.sharpFileTypeCallback) {
-        options.sharpFileTypeCallback = defaultCallbacks[options.fileType.toUpperCase()]
+    if (!options.maxDegreeOfInaccuracyInBytes) {
+        options.maxDegreeOfInaccuracyInBytes = BytesInMB / 4;
     }
- 
-    const targetLength = BytesInMB * options.targetLengthMB;
-    const pixelSize = 4;
-    const pixels = targetLength / pixelSize;
-    const squareRoot = Math.ceil(Math.sqrt(pixels));
 
-    let lastWidth = squareRoot;
-    let lastHeight = squareRoot;
-    let pixelIncrement = 100;
-
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-        const currentHeight = lastHeight;
-        const currentWidth = lastWidth;
-
-        const buf = await generateRandomImageBuffer(currentHeight, currentWidth, options.sharpFileTypeCallback);
-
-        if (buf.length <= (targetLength - (BytesInMB / 4))) {
-            lastHeight += pixelIncrement;
-            lastWidth += pixelIncrement;
-
-            console.log(`${new Date().toTimeString()} ${options.fileType}: Target ${options.targetLengthMB}MB ` +
-                `Actual ${(buf.length / BytesInMB).toFixed(2)}MB - ${currentHeight}x${currentWidth} needs ${((targetLength - buf.length) / BytesInMB).toFixed(2)}MB, ` +
-                `changing h/w +${pixelIncrement} to ${lastWidth}x${lastHeight}...`);
-        }
-        else if (buf.length >= (targetLength + maxDegreeOfInaccuracyInBytes)) {
-            if (pixelIncrement > 10) {
-                pixelIncrement = Math.ceil(pixelIncrement / 2);
-            } else {
-                pixelIncrement = 10;
-            }
-
-            lastHeight -= pixelIncrement;
-            lastWidth -= pixelIncrement;
-
-            console.log(`${new Date().toTimeString()} ${options.fileType}: Target ${options.targetLengthMB}MB ` +
-                `Actual ${(buf.length / BytesInMB).toFixed(2)}MB - ${currentHeight}x${currentWidth} needs ${((targetLength - buf.length) / BytesInMB).toFixed(2)}MB, ` +
-                `changing h/w -${pixelIncrement} to ${lastWidth}x${lastHeight}...`);
-        } else {
-            return buf;
-        }
-    }
+    const fileTypeHandler = getFileTypeHandler(options.fileType);
+    return await fileTypeHandler.Handle(options);
 };

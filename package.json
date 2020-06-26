@@ -8,7 +8,7 @@
     "copypackage": "cpx package.json dist/src",
     "test": "mocha -r ts-node/register 'src/**/*.tests.ts'",
     "test:watch": "mocha -r ts-node/register ./**/*.tests.ts --watch --watch-files ./**/*.tests.ts",
-    "test:coverage": "nyc npm run test",
+    "test:coverage": "npm run build && nyc npm run test",
     "dist": "npm run build && cd dist/src && npm publish --access public"
   },
   "keywords": [
@@ -21,6 +21,7 @@
     "test data"
   ],
   "dependencies": {
+    "officegen": "^0.6.4",
     "sharp": "^0.25.4"
   },
   "devDependencies": {

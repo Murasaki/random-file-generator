@@ -2,40 +2,45 @@ import "mocha";
 import { expect } from "chai";
 
 /** Code in test */
-import { defaultCallbacks, generateRandomImageBuffer, generateRandomFile, GenerateArgumentException, maxDegreeOfInaccuracyInBytes } from "./index";
 import Sinon = require("sinon");
 import { Sharp } from "sharp";
 import sharp = require("sharp");
+import { generateRandomImageBuffer, generateRandomFile, generateRandomBuffer } from "./index";
+import { GenerateArgumentException } from "./exceptions";
 
 const BytesInKiloBytes = 1024;
 const BytesInMB = BytesInKiloBytes * 1024;
 
+const maxDegreeOfInaccuracyInBytes = (BytesInMB / 4);
+
 describe("index", function() {
-    let sharpStub: Sinon.SinonStubbedInstance<any>;
-
-
-    describe("defaultCallbacks", () => {
-        let result: Sharp;
-
-        const fileTypeTest = (propertyInTest: string, sharpFunc: string) => {
-            beforeEach(() => {
-                sharpStub = Sinon.createStubInstance(sharp);
-                sharpStub[sharpFunc].returns(sharpStub);
-                result = defaultCallbacks[propertyInTest](sharpStub as sharp.Sharp)
-            });
-
-            it("should invoke " + propertyInTest, async () => {
-                expect(sharpStub[sharpFunc].getCalls()).lengthOf(1);
-            });
-            
-            it("should return " + propertyInTest + " result", async () => {
-                expect(result).to.equal(sharpStub);
-            });
-        }
-
-        describe("PNG", () => fileTypeTest("PNG", "png"));
-        describe("PNG", () => fileTypeTest("JPEG", "jpeg"));
-        describe("PNG", () => fileTypeTest("TIFF", "tiff"));
+    describe("generateRandomBuffer", () => {
+        it("should create a buffer of exact size", async () => {
+            const actual = await generateRandomBuffer(5);
+            expect(actual.length).to.equal(5);
+        });
+        
+        it("should throw if length is null", async () => {
+            try {
+                const actual = await generateRandomBuffer(null);
+            }
+            catch (err) {
+                expect(err).to.be.instanceOf(GenerateArgumentException);
+                const argErr = err as GenerateArgumentException;
+                expect(argErr.message).to.equal(`Argument 'sizeInBytes' is not a valid value. Value: 'null'`)
+            }
+        });
+        
+        it("should throw if length is undefined", async () => {
+            try {
+                const actual = await generateRandomBuffer(undefined);
+            }
+            catch (err) {
+                expect(err).to.be.instanceOf(GenerateArgumentException);
+                const argErr = err as GenerateArgumentException;
+                expect(argErr.message).to.equal(`Argument 'sizeInBytes' is not a valid value. Value: 'undefined'`)
+            }
+        });
     });
 
     describe("generateRandomImageBuffer", () => {
@@ -205,6 +210,20 @@ describe("index", function() {
 
             expect(result.length).to.be.greaterThan(BytesInMB - (BytesInMB - maxDegreeOfInaccuracyInBytes))
             .and.lessThan(BytesInMB + maxDegreeOfInaccuracyInBytes)
+        });
+
+        
+        it("should be able to generate a 1MB PNG file, with specified inaccuracy", async function() {
+            this.timeout(10000);
+
+            result = await generateRandomFile({
+                fileType: "PNG",
+                targetLengthMB: 1,
+                maxDegreeOfInaccuracyInBytes: 10000
+            })
+
+            expect(result.length).to.be.greaterThan(BytesInMB - 10000)
+            .and.lessThan(BytesInMB + 10000)
         });
     });
 })
