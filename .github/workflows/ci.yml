@@ -30,6 +30,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.github_token }}
       - name: Version
         run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           npm version minor
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
@@ -38,4 +40,5 @@ jobs:
           npm run dist
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
+          NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
       - uses: actions/checkout@v1 
