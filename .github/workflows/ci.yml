@@ -3,8 +3,8 @@ name: CI Build For Random  File Generator
 on:
   push:
     branches: [ master ]
-    tags-ignore:
-      - '**'
+    tags-ignore: 
+      - v1.*
 
 jobs:
   build:
